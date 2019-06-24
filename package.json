@@ -6,9 +6,9 @@
   "scripts": {
     "start": "npm run build && npm run serve",
     "serve": "node dist/server.js",
-    "build": "npm run build-ts && npm run tslint",
+    "build": "npm run build-ts && npm run build-webpack && npm run tslint",
     "build-ts": "tsc",
-    "build-browser-ts": "tsc --p tsconfig.browser.json",
+    "build-webpack": "webpack",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
