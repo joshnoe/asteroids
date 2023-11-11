@@ -75,7 +75,7 @@ export default class AsteroidFactory {
     }
 
     _createFromShot(asteroid: Asteroid) {
-        //pick stage
+        // pick stage
         const newStage = asteroid.stage - 1;
         const radius = this._stages.get(newStage);
 

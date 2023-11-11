@@ -1,16 +1,11 @@
 // TODO: remove height and width from gameObject
 // TODO: make asteroid explosion larger if asteroid is larger
 
-import Point from "./point";
-import Velocity from "./velocity";
-import Ship from "./ship";
-import AngleDirection from "./angle-direction";
 import Asteroid from "./asteroid";
 import GameState from "./game-state";
 import GameStateFactory from "./game-state-factory";
 import AsteroidFactory from "./asteroid-factory";
 import AsteroidsControls from "./asteroids-controls";
-import Polygon from "./polygon";
 import ExplosionFactory from "./explosion-factory";
 import Explosion from "./explosion";
 import PolygonGameObject from "./polygon-game-object";
@@ -18,15 +13,21 @@ import PointGameObject from "./point-game-object";
 import AudioPlayer from "./audio-player";
 import HeroFactory from "./hero-factory";
 import Hero from "./hero";
+import UFO from "./ufo";
+import Point from "./point";
+import Velocity from "./velocity";
+import AngleDirection from "./angle-direction";
+import Polygon from "./polygon";
 
-const maxAsteroids : number = 7;
-const chanceOfNewAsteroidPerSecond : number = 1;
+const maxAsteroids = 10;
+const chanceOfNewAsteroidPerSecond = .03;
 
 class App {
     canvas1: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     hero: Hero;
     asteroids: Array<Asteroid> = [];
+    ufos: Array<UFO> = [];
     explosions: Array<Explosion> = [];
     controls: AsteroidsControls;
     gameState: GameState;
@@ -34,7 +35,7 @@ class App {
     asteroidFactory: AsteroidFactory;
     explosionFactory: ExplosionFactory;
     heroFactory: HeroFactory;
-    lastLoopTick: number;
+    lastLoopTick: number | null;
 
     constructor() {
         this.lastLoopTick = null;
@@ -62,8 +63,8 @@ class App {
             this.lastLoopTick = timeStamp;
         }
 
-        let millisecondsPassed: number = timeStamp - this.lastLoopTick;
-        let secondsPassed = millisecondsPassed / 1000;
+        const millisecondsPassed: number = timeStamp - this.lastLoopTick;
+        const secondsPassed = millisecondsPassed / 1000;
 
         this._generateNewGameObjects(secondsPassed);
         this._updatePositions(secondsPassed);
@@ -73,18 +74,30 @@ class App {
         window.requestAnimationFrame(timeStamp => this._executeGameStep(timeStamp));
 
         this.lastLoopTick = timeStamp;
+
+        this.gameState.totalGameTime += secondsPassed;
     }
 
     _generateNewGameObjects(secondsPassed: number) {
-        if (this.asteroids.length < maxAsteroids) {
-            // possibly generate new asteroid
-            const asteroidChance = chanceOfNewAsteroidPerSecond * secondsPassed;
-            const doCreateNew = asteroidChance > Math.random();
-
-            if (doCreateNew) {
-                this.asteroids.push(this.asteroidFactory.createAtBorder());
-            }
+        // generate ufo
+        if (this.ufos.length == 0) {
+            const ufoPolygon = new Polygon([new Point(0, 0), new Point(20, 0), new Point(20, 20), new Point(0, 20)]);
+            this.ufos.push(new UFO(new Point(0, 50), 20, 20, new Velocity(50, new AngleDirection(0)), 50, ufoPolygon));
         }
+
+        //generate asteroids
+        // if (this.asteroids.length < maxAsteroids) {
+        //     // possibly generate new asteroid
+        //     const asteroidChance = chanceOfNewAsteroidPerSecond * secondsPassed;
+        //     const doCreateNew = asteroidChance > Math.random();
+        
+        //     if (doCreateNew) {
+        //         this.asteroids.push(this.asteroidFactory.createAtBorder());
+        //     }
+        // }
+
+        // generate ufo bullets
+
     }
 
     _updatePositions(secondsPassed: number): void {
@@ -100,6 +113,15 @@ class App {
 
         this.asteroids.forEach(a => {
             a.updatePosition(secondsPassed);
+        });
+
+        this.ufos.forEach(ufo => {
+            ufo.updatePosition(secondsPassed);
+            const shouldShoot = Math.floor(this.gameState.totalGameTime) % 5 === 0;
+            if (shouldShoot) {
+                //ufo.shoot(this.hero);
+            }
+            
         });
 
         this.explosions.forEach((e, index) => {
@@ -119,14 +141,23 @@ class App {
                 b.updatePosition(secondsPassed);
             }
         });
+
+        this.gameState.enemyBullets.forEach((b, index) => {
+            if (b.removeOnNextTick) {
+                delete this.gameState.bullets[index];
+            }
+            else {
+                b.updatePosition(secondsPassed);
+            }
+        });
     }
 
     _detectCollisions(): void {
         this.ctx.save();
 
-        //detect if hero has run into any objects
+        // detect if hero has run into any objects
         this.asteroids.forEach((a, asteroidIndex) => {
-            //detect if bullets hit any asteroids
+            // detect if bullets hit any asteroids
             this.gameState.bullets.forEach((b, bulletIndex) => {
                 if (a.collider.collidedWith(b)) {
                     if (a.stage > 1) {
@@ -136,8 +167,8 @@ class App {
                     this.explosions.push(this.explosionFactory.createFromAsteroid(a));
                     delete this.asteroids[asteroidIndex];
                     delete this.gameState.bullets[bulletIndex];
-
                     this.audioPlayer.playExplosionSmall();
+                    this.gameState.score.addAsteroidKill();
                 }
             });
 
@@ -147,18 +178,18 @@ class App {
         });
     }
 
-    _killHero() : void {
+    _killHero(): void {
         // TODO: implement
-        console.log('hero collision');
+        console.log("hero collision");
         this.hero.isAlive = false;
         this.explosions.push(this.explosionFactory.createFromShip(this.hero));
-        this.audioPlayer.playExplosionLarge()
+        this.audioPlayer.playExplosionLarge();
     }
 
     _render(): void {
         this.ctx.clearRect(0, 0, this.canvas1.width, this.canvas1.height);
 
-        //background
+        // background
         this.ctx.save();
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0, 0, this.canvas1.width, this.canvas1.height);
@@ -166,7 +197,7 @@ class App {
 
         if (this.hero.isAlive) {
             this.ctx.save();
-            //this.ctx.strokeStyle = "#45f442";
+            // this.ctx.strokeStyle = "#45f442";
             this.ctx.strokeStyle = "white";
             this.ctx.lineWidth = 1;
             this._renderPolygonObject(this.hero);
@@ -201,13 +232,23 @@ class App {
             this._renderPointObject(b);
         });
 
+        this.gameState.enemyBullets.forEach(b => {
+            this._renderPointObject(b);
+        });
+
         this.asteroids.forEach(a => {
             this._renderPolygonObject(a);
+        });
+
+        this.ufos.forEach(ufo => {
+            this._renderPolygonObject(ufo);
         });
 
         this.explosions.forEach(e => {
             e.points.forEach(p => this._renderPointObject(p));
         });
+
+        this._renderPolygonObject(this.gameState.score.pointsPolygon())
 
         this.ctx.restore();
     }
@@ -218,7 +259,7 @@ class App {
         this.ctx.beginPath();
         this.ctx.moveTo(object.getShapePointPositionX(0), object.getShapePointPositionY(0));
 
-        for(let i = 1; i < points.length; i++) {
+        for (let i = 1; i < points.length; i++) {
             this.ctx.lineTo(object.getShapePointPositionX(i), object.getShapePointPositionY(i));
         }
         this.ctx.closePath();
