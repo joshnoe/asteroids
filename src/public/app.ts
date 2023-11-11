@@ -248,7 +248,9 @@ class App {
             e.points.forEach(p => this._renderPointObject(p));
         });
 
-        this._renderPolygonObject(this.gameState.score.pointsPolygon())
+        for (let polygon of this.gameState.score.totalPolygon()) {
+            this._renderPolygonObject(polygon);
+        }
 
         this.ctx.restore();
     }

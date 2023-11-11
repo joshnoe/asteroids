@@ -1,4 +1,5 @@
 import Bullet from "./bullet";
+import Score from "./score";
 
 export default class GameState {
     gameHeight: number;
@@ -7,7 +8,7 @@ export default class GameState {
     bullets: Array<Bullet>;
     enemyBullets: Array<Bullet>;
     totalGameTime: number;
-    score: number;
+    score: Score;
 
     constructor(gameWidth: number, gameHeight: number) {
         this.gameWidth = gameWidth;
