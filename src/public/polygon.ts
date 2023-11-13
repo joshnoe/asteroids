@@ -6,9 +6,11 @@ import AngleDirection from "./angle-direction";
 export default class Polygon {
     points: Array<Point>;
     center: Point;
+    isOpenPath: boolean;
 
-    constructor(points: Array<Point>) {
+    constructor(points: Array<Point>, isOpenPath: boolean = false) {
         this.points = points;
+        this.isOpenPath = isOpenPath;
         this._updateCenter();
     }
 
@@ -17,6 +19,12 @@ export default class Polygon {
         return new Polygon(points);
     }
 
+    static fromMatrixOpenPath(matrix: Array<Array<number>>): Polygon {
+        var polygon = this.fromMatrix(matrix);
+        polygon.isOpenPath = true;
+        return polygon;
+    }
+        
     rotate(angle: AngleDirection): void {
         this.points = this.points.map(p => {
             const combinedVector = Vector.fromPoint(p);

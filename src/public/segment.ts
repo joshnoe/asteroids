@@ -26,6 +26,10 @@ export default class Segment {
         return this.pointB.y;
     }
 
+    static fromPoints(ax: number, ay: number, bx: number, by: number) {
+        return new Segment(new Point(ax, ay), new Point(bx, by));
+    }
+
     intersects(other: Segment) : boolean {
         // get intersection of two lines
         const thisLine =  Line.fromSegment(this);
@@ -44,6 +48,10 @@ export default class Segment {
         }
 
         return other._containsLinePoint(intersect);
+    }
+
+    positionAt(point: Point) {
+        return new Segment(this.pointA.add(point), this.pointB.add(point)); 
     }
 
     _containsLinePoint(linePoint: Point) {
