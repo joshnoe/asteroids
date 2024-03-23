@@ -3,6 +3,7 @@ import KeyboardDirection from "./keyboard-direction";
 export default class AsteroidsControls {
     keyboardDirection: KeyboardDirection;
     tryShoot: boolean;
+    pause: boolean;
 
     constructor () {
         this.keyboardDirection = new KeyboardDirection();
@@ -16,6 +17,10 @@ export default class AsteroidsControls {
     _handleKeyDown(event: KeyboardEvent): void {
         if (event.key == " ") {
             this.tryShoot = true;
+        }
+
+        if (event.key == "p") {
+            this.pause = !this.pause;
         }
 
         this._setKeyboardDirection(event.key, true);

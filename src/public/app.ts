@@ -63,17 +63,20 @@ class App {
     }
 
     _executeGameStep(timeStamp: number): void {
-        if (this.lastLoopTick == null) {
-            this.lastLoopTick = timeStamp;
+        if (!this.controls.pause) {
+
+            if (this.lastLoopTick == null) {
+                this.lastLoopTick = timeStamp;
+            }
+
+            let millisecondsPassed: number = timeStamp - this.lastLoopTick;
+            let secondsPassed = millisecondsPassed / 1000;
+        
+            this._generateNewGameObjects(secondsPassed);
+            this._updatePositions(secondsPassed);
+            this._detectCollisions();
+            this._render();
         }
-
-        const millisecondsPassed: number = timeStamp - this.lastLoopTick;
-        const secondsPassed = millisecondsPassed / 1000;
-
-        this._generateNewGameObjects(secondsPassed);
-        this._updatePositions(secondsPassed);
-        this._detectCollisions();
-        this._render();
 
         window.requestAnimationFrame(timeStamp => this._executeGameStep(timeStamp));
 
