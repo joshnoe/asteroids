@@ -34,8 +34,7 @@ export default class Hero extends Ship implements Collidable {
     }
 
     updatePosition(secondsPassed: number) {
-        super.updatePosition(secondsPassed);
-        this.thrustTail.updatePosition(secondsPassed);
+        super.updatePositionTogetherWith(secondsPassed, this.thrustTail);
     }
 
     applyControls(controls: AsteroidsControls, secondsPassed: number): void {

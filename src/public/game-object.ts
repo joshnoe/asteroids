@@ -57,6 +57,44 @@ export default abstract class GameObject {
         }
     }
 
+    updatePositionTogetherWith(secondsPassed: number, ... gameObjects: GameObject[]) {
+        // Update positions of all objects before ensuring they're on the screen and potentially moving them
+        // to the other side of the screen.
+        // Otherwise, a rotation could cause an incorrect calculation due to adding the aroundpoint of an already-round-screened
+        // object
+        
+        this.previousPosition = this.position.clone();
+
+        const movementX = this.velocity.xSpeed * secondsPassed;
+        const movementY = this.velocity.ySpeed * secondsPassed;
+
+        this.position.x += movementX;
+        this.position.y += movementY;
+
+        if (this.collider != null) {
+            this.collider.position.x += movementX;
+            this.collider.position.y += movementY;
+        }
+        
+        gameObjects.forEach(object => {
+            object.previousPosition = object.position.clone();
+
+            const movementX = object.velocity.xSpeed * secondsPassed;
+            const movementY = object.velocity.ySpeed * secondsPassed;
+    
+            object.position.x += movementX;
+            object.position.y += movementY;
+
+            if (object.collider != null) {
+                object.collider.position.x += movementX;
+                object.collider.position.y += movementY;
+            }    
+        })
+
+        this._ensureOnScreenIncludeAttached(this.position, ...gameObjects);
+        this._ensureOnScreenIncludeAttached(this.collider.position);    
+    }
+
     _ensureOnScreen(position: Point) {
         // travel to other side of screen if necessary
 
@@ -74,6 +112,42 @@ export default abstract class GameObject {
 
         if (position.y <= 0) {
             position.y += this.gameState.gameHeight;
+        }
+    }
+
+    _ensureOnScreenIncludeAttached(position: Point, ... attachedGameObjects: GameObject[]) {
+        // travel to other side of screen if necessary
+
+        if (position.x >= this.gameState.gameWidth) {
+            position.x -= this.gameState.gameWidth;
+
+            attachedGameObjects.forEach(object => {
+                object.position.x -= this.gameState.gameWidth;
+            });
+        }
+
+        if (position.x <= 0) {
+            position.x += this.gameState.gameWidth;
+
+            attachedGameObjects.forEach(object => {
+                object.position.x += this.gameState.gameWidth;
+            });
+        }
+
+        if (position.y >= this.gameState.gameHeight) {
+            position.y -= this.gameState.gameHeight;
+
+            attachedGameObjects.forEach(object => {
+                object.position.y -= this.gameState.gameHeight;
+            });
+        }
+
+        if (position.y <= 0) {
+            position.y += this.gameState.gameHeight;
+
+            attachedGameObjects.forEach(object => {
+                object.position.y += this.gameState.gameHeight;
+            });
         }
     }
 }
