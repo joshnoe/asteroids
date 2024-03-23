@@ -71,18 +71,16 @@ class App {
 
             let millisecondsPassed: number = timeStamp - this.lastLoopTick;
             let secondsPassed = millisecondsPassed / 1000;
-        
             this._generateNewGameObjects(secondsPassed);
             this._updatePositions(secondsPassed);
             this._detectCollisions();
             this._render();
+
+            this.gameState.totalGameTime += secondsPassed;
         }
 
         window.requestAnimationFrame(timeStamp => this._executeGameStep(timeStamp));
-
         this.lastLoopTick = timeStamp;
-
-        this.gameState.totalGameTime += secondsPassed;
     }
 
     _generateNewGameObjects(secondsPassed: number) {
