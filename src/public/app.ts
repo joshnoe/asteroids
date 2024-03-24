@@ -21,9 +21,11 @@ import Score from "./score";
 import PositionalGlyph from "./positional-glyph";
 import Segment from "./segment";
 import { time, timeStamp } from "console";
+import Health from "./health";
 
 const maxAsteroids = 10;
 const chanceOfNewAsteroidPerSecond = .3;
+const startingLives = 3;
 
 class App {
     canvas1: HTMLCanvasElement;
@@ -40,6 +42,7 @@ class App {
     heroFactory: HeroFactory;
     lastLoopTick: number | null;
     score: Score;
+    heath: Health
 
     constructor() {
         this.lastLoopTick = null;
@@ -48,6 +51,7 @@ class App {
         GameStateFactory.set(this.canvas1.width, this.canvas1.height);
         this.gameState = GameStateFactory.getSingle();
         this.score = new Score();
+        this.heath = new Health(startingLives);
         this.asteroidFactory = new AsteroidFactory();
         this.explosionFactory = new ExplosionFactory();
 
@@ -192,6 +196,7 @@ class App {
         this.hero.isAlive = false;
         this.explosions.push(this.explosionFactory.createFromShip(this.hero));
         this.audioPlayer.playExplosionLarge();
+        this.heath.decreaseLife()
         this.hero.lastTimeKilled = timeStamp
     }
 
@@ -263,6 +268,10 @@ class App {
 
         this.score.totalAsGlyphs().forEach(g => {
             this._renderGlyph(g);
+        });
+
+        this.heath.livesLeftPolygons.forEach(l => {
+            this._renderPolygonObject(l);
         });
 
         this.ctx.restore();

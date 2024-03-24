@@ -34,6 +34,23 @@ export default class Polygon {
         });
     }
 
+    getWidth() {
+        let min = 999999;
+        let max = 0;
+
+        this.points.forEach(p => {
+            if (p.x < min) {
+                min = p.x
+            }
+
+            if (p.x > max) {
+                max = p.x
+            } 
+        });
+
+        return max - min
+    }
+
     _updateCenter() {
         const x = _.sumBy(this.points, p => p.x) / this.points.length;
         const y = _.sumBy(this.points, p => p.y) / this.points.length;
