@@ -5,7 +5,7 @@ import AngleDirection from "./angle-direction";
 import HeroPolygonFactory from "./hero-polygon-factory";
 
 const distanceFromLeftOfScreen = 50
-const distanceFromTopOfScreen = 20
+const distanceFromTopOfScreen = 40
 const spaceBetweenShips = 10
 
 export default class Health {
@@ -27,6 +27,8 @@ export default class Health {
     }
 
     _refreshLivesLeftPolygons() {
+        this.livesLeftPolygons = []
+
         for(let i = 0; i < this.livesLeft; i++) {
             const heroShape = this.herofactory.createShape()
             const width = heroShape.getWidth()
