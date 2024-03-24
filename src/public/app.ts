@@ -20,6 +20,7 @@ import AngleDirection from "./angle-direction";
 import Score from "./score";
 import PositionalGlyph from "./positional-glyph";
 import Segment from "./segment";
+import { time, timeStamp } from "console";
 
 const maxAsteroids = 10;
 const chanceOfNewAsteroidPerSecond = .3;
@@ -73,7 +74,7 @@ class App {
             let secondsPassed = millisecondsPassed / 1000;
             this._generateNewGameObjects(secondsPassed);
             this._updatePositions(secondsPassed);
-            this._detectCollisions();
+            this._detectCollisions(timeStamp);
             this._render();
 
             this.gameState.totalGameTime += secondsPassed;
@@ -157,7 +158,7 @@ class App {
         });
     }
 
-    _detectCollisions(): void {
+    _detectCollisions(timeStamp: number): void {
         this.ctx.save();
 
         // detect if hero has run into any objects
@@ -177,18 +178,25 @@ class App {
                 }
             });
 
+            if (timeStamp - this.hero.lastTimeKilled > 3000) {
+                this._reviveHero();
+            }
+
             if (this.hero.isAlive && this.hero.collider.collidedWith(a)) {
-                this._killHero();
+                this._killHero(timeStamp);
             }
         });
     }
 
-    _killHero(): void {
-        // TODO: implement
-        console.log("hero collision");
+    _killHero(timeStamp: number): void {
         this.hero.isAlive = false;
         this.explosions.push(this.explosionFactory.createFromShip(this.hero));
         this.audioPlayer.playExplosionLarge();
+        this.hero.lastTimeKilled = timeStamp
+    }
+
+    _reviveHero() : void {
+        this.hero = this.heroFactory.createSafeFromCollisions([]);
     }
 
     _render(): void {

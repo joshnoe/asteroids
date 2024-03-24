@@ -16,6 +16,7 @@ export default class Hero extends Ship implements Collidable {
     isThrusting: boolean = false;
     thrustTail: PolygonGameObject;
     collider: Collider;
+    lastTimeKilled: number;
 
     constructor(audioPlayer: AudioPlayer, position: Point, dimensions: Dimensions, velocity: Velocity, weight: number, thrustPower: number, turnRate: number, shotRate: number, shape: Polygon) {
         super(audioPlayer, position, dimensions.width, dimensions.height, velocity, weight, thrustPower, turnRate, shotRate, shape);
